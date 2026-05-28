@@ -21,10 +21,8 @@ def chat_stream(message: str, history: list, model: str, temperature: float, max
     client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY") or "mock-key")
 
     messages = []
-    for human, assistant in history[-3:]:
-        messages.append({"role": "user", "content": human})
-        if assistant:
-            messages.append({"role": "assistant", "content": assistant})
+    for turn in history[-3:]:
+        messages.append({"role": turn["role"], "content": turn["content"]})
     messages.append({"role": "user", "content": message})
 
     partial = ""
@@ -75,7 +73,7 @@ def run_batch_comparison(prompts_text: str) -> str:
 
 
 def build_app() -> gr.Blocks:
-    with gr.Blocks(title="AI Chatbot — Day 1 Lab", theme=gr.themes.Soft()) as app:
+    with gr.Blocks(title="AI Chatbot — Day 1 Lab") as app:
         gr.Markdown("# 🤖 AI Chatbot Lab\nPowered by OpenAI GPT-4o / GPT-4o-mini")
 
         with gr.Tabs():
@@ -96,8 +94,6 @@ def build_app() -> gr.Blocks:
                             fn=chat_stream,
                             additional_inputs=[model_choice, temperature, max_tokens],
                             title=None,
-                            retry_btn=None,
-                            undo_btn=None,
                         )
 
             # --- Tab 2: Model Comparison ---
@@ -138,4 +134,4 @@ def build_app() -> gr.Blocks:
 
 if __name__ == "__main__":
     app = build_app()
-    app.launch(server_name="127.0.0.1", server_port=7860, share=False)
+    app.launch(server_name="0.0.0.0", server_port=7860, share=False, theme=gr.themes.Soft())

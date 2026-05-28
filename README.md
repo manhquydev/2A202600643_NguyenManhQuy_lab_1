@@ -105,6 +105,8 @@ python web_app.py
 # Mở trình duyệt: http://localhost:7860
 ```
 
+> **Lưu ý:** `web_app.py` đã được cập nhật tương thích với Gradio API mới — lịch sử hội thoại dùng định dạng dict thay vì tuple, server lắng nghe trên `0.0.0.0` để truy cập từ mạng cục bộ.
+
 ---
 
 ## Chạy Kiểm Thử
