@@ -10,79 +10,99 @@ Học cách gọi OpenAI API, hiểu các tham số sinh text quan trọng, so s
 
 ### Yêu Cầu
 - Python 3.10+
-- OpenAI API key (chỉ để chạy thủ công — kiểm thử dùng mock)
+- OpenAI API key
 
 ```bash
-# Cài đặt thư viện
-pip install -r ../../requirements.txt
-
-# Thiết lập biến môi trường
+pip install -r requirements.txt
 export OPENAI_API_KEY="sk-..."
 ```
 
 ---
 
-## Nhiệm Vụ
+## Cấu Trúc Project
 
-### Nhiệm vụ 1: Triển khai `call_openai`
-Gọi OpenAI Chat Completions API với model GPT-4o và trả về nội dung phản hồi cùng với độ trễ đo được.
-
-**Tham số:**
-- `prompt` (str): Tin nhắn của người dùng
-- `model` (str): Model OpenAI sử dụng (mặc định: gpt-4o)
-- `temperature` (float): Kiểm soát mức độ ngẫu nhiên (0.0–2.0)
-- `max_tokens` (int): Số token tối đa được sinh ra
-
-**Trả về:** `tuple[str, float]` — (response_text, latency_seconds)
-
----
-
-### Nhiệm vụ 2: Triển khai `call_openai_mini`
-Gọi OpenAI API với model GPT-4o-mini — nhanh hơn và rẻ hơn. Gợi ý: tái sử dụng `call_openai` với `model=OPENAI_MINI_MODEL`.
-
-**Trả về:** `tuple[str, float]` — (response_text, latency_seconds)
+```
+day1/
+├── solution/
+│   ├── solution.py        # Triển khai chính (Tasks 1–4 + Bonus A–C)
+│   └── exercises.md       # Bài tập phân tích đã hoàn thành
+├── ui/
+│   └── terminal.py        # Rich TUI components (console, panels, tables, spinner)
+├── tests/
+│   └── test_solution.py   # Pytest test suite (mock-based)
+├── chatbot_rich.py         # Chatbot terminal dùng Rich TUI
+├── web_app.py              # Chatbot web dùng Gradio
+├── template.py             # Template gốc
+└── requirements.txt
+```
 
 ---
 
-### Nhiệm vụ 3: Triển khai `compare_models`
-Gọi cả GPT-4o và GPT-4o-mini với cùng một prompt và trả về từ điển so sánh bao gồm phản hồi, độ trễ và chi phí ước tính.
+## Các Nhiệm Vụ Đã Hoàn Thành
 
-**Ước tính chi phí output:**
-- GPT-4o: $0.010 mỗi 1K token đầu ra
-- GPT-4o-mini: $0.0006 mỗi 1K token đầu ra
+### Task 1 — `call_openai`
+Gọi OpenAI Chat Completions API với GPT-4o, trả về `(response_text, latency_seconds)`.
 
-**Trả về dict với các key:**
-- `gpt4o_response`, `mini_response`
-- `gpt4o_latency`, `mini_latency`
-- `gpt4o_cost_estimate`
+- Hỗ trợ các tham số: `model`, `temperature`, `top_p`, `max_tokens`
+- Đo latency chính xác, đảm bảo latency > 0
+
+### Task 2 — `call_openai_mini`
+Gọi GPT-4o-mini bằng cách tái sử dụng `call_openai(model=OPENAI_MINI_MODEL)`.
+
+### Task 3 — `compare_models`
+Gọi cả GPT-4o và GPT-4o-mini với cùng prompt, trả về dict so sánh:
+
+| Key | Mô tả |
+|-----|-------|
+| `gpt4o_response` | Phản hồi GPT-4o |
+| `mini_response` | Phản hồi GPT-4o-mini |
+| `gpt4o_latency` | Thời gian phản hồi GPT-4o (giây) |
+| `mini_latency` | Thời gian phản hồi GPT-4o-mini (giây) |
+| `gpt4o_cost_estimate` | Chi phí ước tính USD cho GPT-4o |
+
+Chi phí ước tính: GPT-4o $0.010/1K tokens, GPT-4o-mini $0.0006/1K tokens (~16.7× rẻ hơn).
+
+### Task 4 — `streaming_chatbot`
+Chatbot terminal tương tác với streaming tokens và lịch sử 3 lượt hội thoại gần nhất.
 
 ---
 
-### Nhiệm vụ 4: Triển khai `streaming_chatbot`
-Xây dựng chatbot dòng lệnh tương tác dùng streaming để hiển thị token khi chúng được sinh ra. Duy trì lịch sử hội thoại 3 lượt gần nhất.
+## Bonus Tasks Đã Hoàn Thành
+
+### Bonus A — `retry_with_backoff`
+Gọi lại hàm tối đa `max_retries` lần với exponential backoff (`base_delay × 2^attempt`) khi gặp lỗi.
+
+### Bonus B — `batch_compare`
+Chạy `compare_models` trên danh sách nhiều prompts, trả về list kết quả kèm key `"prompt"`.
+
+### Bonus C — `format_comparison_table`
+Định dạng kết quả batch thành bảng text, tự căn chỉnh cột, cắt ngắn text dài hơn 40 ký tự.
 
 ---
 
-## Hướng Dẫn Nộp Bài
+## Giao Diện Mở Rộng
+
+### Rich TUI (`chatbot_rich.py`)
+Chatbot terminal được nâng cấp bằng thư viện [Rich](https://github.com/Textualize/rich):
+- Panels màu sắc cho tin nhắn user/assistant
+- Spinner animation trong khi chờ phản hồi
+- Bảng so sánh model được định dạng đẹp
 
 ```bash
-# 1. Copy template.py vào folder solution và đổi tên
-cp template.py solution/solution.py
-
-# 2. Copy exercises.md vào folder solution
-cp exercises.md solution/exercises.md
-
-# 3. Zip folder solution
-zip -r solution.zip solution/
-
-# 4. Đổi tên file solution.zip thành thành <mã sinh viên>_lab_1.zip và upload lên hệ thống LMS 
+python chatbot_rich.py
 ```
 
-**Cấu trúc folder solution trước khi zip:**
-```
-solution/
-├── solution.py      # template.py đã hoàn thiện
-└── exercises.md     # bài tập và phản ánh đã điền
+### Gradio Web UI (`web_app.py`)
+Ứng dụng web với 2 tabs:
+
+| Tab | Tính năng |
+|-----|-----------|
+| 💬 Chat | Chat streaming, chọn model, điều chỉnh temperature & max_tokens |
+| 🔬 So Sánh Models | So sánh GPT-4o vs GPT-4o-mini, batch comparison nhiều prompts |
+
+```bash
+python web_app.py
+# Mở trình duyệt: http://localhost:7860
 ```
 
 ---
@@ -93,7 +113,7 @@ solution/
 pytest tests/ -v
 ```
 
-Tất cả kiểm thử dùng `unittest.mock` — **không cần API key thật**.
+Tất cả tests dùng `unittest.mock` — **không cần API key thật**.
 
 ---
 
@@ -111,17 +131,13 @@ Tất cả kiểm thử dùng `unittest.mock` — **không cần API key thật*
 
 ---
 
-## Hướng Dẫn Thời Gian Lab
-
-| Thời Gian | Hoạt Động |
-|-----------|-----------|
-| 0:00–1:00 | Lập trình cốt lõi: Triển khai tất cả TODO trong `template.py` |
-| 1:00–1:30 | Mở rộng: Hoàn thành Phần 2 của `exercises.md` |
-
-
-
 ## Danh Sách Kiểm Tra Nộp Bài
 
-- [ ] `pytest tests/ -v` — tất cả kiểm thử pass
-- [ ] `solution/exercises.md` — tất cả câu trả lời đã điền
-- [ ] `solution/solution.py` — triển khai cuối cùng của bạn
+- [x] `pytest tests/ -v` — tất cả kiểm thử pass
+- [x] `solution/exercises.md` — tất cả câu trả lời đã điền
+- [x] `solution/solution.py` — triển khai cuối cùng
+- [x] Bonus A: `retry_with_backoff` đã triển khai
+- [x] Bonus B: `batch_compare` đã triển khai
+- [x] Bonus C: `format_comparison_table` đã triển khai
+- [x] Rich TUI chatbot (`chatbot_rich.py`)
+- [x] Gradio Web UI (`web_app.py`)
